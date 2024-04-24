@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}PhishNet{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">PhishNet</h1>
+    <p class="lead mb-4">Catch phishing sites before it's too late!
+    </p>
+
+    <form id="analyze-form">
+        <div class="mb-3">
+            <label for="url" class="form-label">URL</label>
+            <input type="url" class="form-control" id="url" placeholder="https://example.com" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Analyze Website</button>
+    </form>
+
+    <div id="result" class="mt-4" style="display: none;">
+        <h2>Result:</h2>
+        <h3>Classification:</h3>
+        <p id="result-website-classification"></p>
+
+        <h3>Screenshot:</h3>
+        <img id="result-screenshot" src="" alt="Screenshot"
+            style="max-width: 100%; max-height: 400px; border: 1px solid #ccc;">
+
+        <h3>URL:</h3>
+        <p id="result-url"></p>
+
+        <h3>Other classifications:</h3>
+
+        <h4>Phishing</h4>
+
+        <h5>URL:</h5>
+        <p id="result-url-phishing-class"></p>
+
+        <h4>Language:</h4>
+
+        <h5>Title:</h5>
+        <p id="result-title-class"></p>
+
+        <h5>Content:</h5>
+        <p id="result-content-class"></p>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+    document.getElementById("analyze-form").addEventListener("submit", async function (event) {
+        event.preventDefault();
+
+        const urlInput = document.getElementById("url");
+        const resultDiv = document.getElementById("result");
+
+        const resultUrl = document.getElementById("result-url");
+        const resultWebsiteClassification = document.getElementById("result-website-classification");
+        const resultScreenshot = document.getElementById("result-screenshot");
+        const resultUrlPhishingClass = document.getElementById("result-url-phishing-class");
+        const resultTitleClass = document.getElementById("result-title-class");
+        const resultContentClass = document.getElementById("result-content-class");
+
+        resultDiv.style.display = "none";
+
+        try {
+            const response = await fetch("/classify/url/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    url: urlInput.value
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log(data);
+                resultWebsiteClassification.textContent = data.verdict;
+
+                resultUrl.textContent = data.url;
+                resultScreenshot.src = "data:image/png;base64," + data.screenshot;
+
+                resultUrlPhishingClass.innerHTML = data.classifications.phishing.url.predictions[0].label + ": " + data.classifications.phishing.url.predictions[0].score;
+                resultTitleClass.innerHTML = data.classifications.title.language.predictions[0].label + ": " + data.classifications.title.language.predictions[0].score;
+                resultContentClass.innerHTML = data.classifications.content.language.predictions[0].label + ": " + data.classifications.content.language.predictions[0].score;
+
+                resultDiv.style.display = "block";
+            } else {
+                alert("Error: " + response.statusText);
+            }
+        } catch (error) {
+            alert("Error: " + error.message);
+        }
+    });
+</script>
+{% endblock %}

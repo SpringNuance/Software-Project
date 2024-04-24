@@ -1,0 +1,26 @@
+.navbar {
+    background-color: rgb(10, 30, 60);
+}
+
+#logo svg {
+    max-width: 180px;
+    box-sizing: border-box;
+    fill: rgb(250, 245, 245);
+}
+
+#logo {
+    display: block;
+    width: 100%;
+    height: 55px;
+    text-align: center;
+    margin-top: 10px;
+}
+
+#result-website-classification {
+    font-size: xx-large;
+    text-decoration: underline;
+}
+
+.container {
+    margin-top: 2rem;
+}
